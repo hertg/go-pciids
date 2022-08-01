@@ -2,6 +2,7 @@ package pciids
 
 import (
 	"bufio"
+	"fmt"
 
 	"github.com/hertg/go-pciids/internal/conv"
 )
@@ -19,7 +20,10 @@ const (
 	SIZE_HINT_SUBSYSTEMS = 10000 // actual length at 2022-08-01: 9741
 )
 
-func NewDB(scanner *bufio.Scanner) *DB {
+// NewDB Parse a pci.ids file with the provided scanner and return
+// a pointer to pciids.DB which can be used for querying.
+// May return an error if an unexpected line is encountered while parsing.
+func NewDB(scanner *bufio.Scanner) (*DB, error) {
 	db := &DB{
 		Vendors:    make(map[VendorID]*Vendor, SIZE_HINT_VENDORS),
 		Devices:    make(map[DeviceID]*Device, SIZE_HINT_DEVICES),
@@ -98,7 +102,7 @@ func NewDB(scanner *bufio.Scanner) *DB {
 					db.Vendors[*cur.vendor].Devices[id] = device
 					cur.device = &id
 				} else {
-					panic("got no cursor for tabbed line")
+					return nil, fmt.Errorf("parsing error: cursor is on a tabbed line, but without any cursor context info")
 				}
 			} else {
 				if cur.subclass != nil {
@@ -123,13 +127,12 @@ func NewDB(scanner *bufio.Scanner) *DB {
 						cur.subsysCache[svid] = append(cur.subsysCache[svid], subsystem)
 					}
 				} else {
-					panic("got no cursor for double tabbed line")
+					return nil, fmt.Errorf("parsing error: cursor is on a double tabbed line, but without any cursor context info")
 				}
 			}
 		} else {
-			panic("unexpected beginning of line")
-			// continue // unexpected
+			return nil, fmt.Errorf("unexpected beginning of line: %x", line[0])
 		}
 	}
-	return db
+	return db, nil
 }

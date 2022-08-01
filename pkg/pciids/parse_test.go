@@ -46,7 +46,7 @@ func testDB() *pciids.DB {
 		b := []byte(pciids_example)
 		r := bytes.NewReader(b)
 		s := bufio.NewScanner(r)
-		db = pciids.NewDB(s)
+		db, _ = pciids.NewDB(s)
 	})
 	return db
 }

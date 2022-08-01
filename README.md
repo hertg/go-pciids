@@ -5,13 +5,10 @@ A minimal, zero-dependency library to parse [pci.ids](https://pci-ids.ucw.cz/) f
 ## Description
 
 The library provides methods to parse the contents of a `pci.ids` file
-and export methods to query the parsed data.
-
-It has been created as a stripped down, but more performant alternative
-to [jaypipes/pcidb](https://github.com/jaypipes/pcidb).
-
-Because of this minimalistic approach only functions
-for parsing and querying are provided, without any extra features (see [Limitations](#limitations)).
+and export methods to query the parsed data. It has been created
+as a stripped down, but more performant alternative to [jaypipes/pcidb](https://github.com/jaypipes/pcidb).
+Because of this minimalistic approach only functions for parsing and
+querying are provided, without any extra features (see [Limitations](#limitations)).
 
 ## Limitations
 
@@ -23,6 +20,24 @@ The following features are **not** included:
 
 ## Usage
 
+### Install
+
+```shell
+go get github.com/hertg/go-pciids
+```
+
+### Parse
+
+```go
+filepath := "/usr/share/hwdata/pci.ids"
+file, _ := os.Open(filepath)
+scanner := bufio.NewScanner(file)
+
+// you need to provide a *bufio.Scanner for the pci.ids yourself
+db, err := pciids.NewDB(scanner)
+```
+
+### Query
 TODO
 
 ## Comparison
