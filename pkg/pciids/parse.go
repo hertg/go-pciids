@@ -21,10 +21,10 @@ const (
 
 func NewDB(scanner *bufio.Scanner) *DB {
 	db := &DB{
-		Vendors:    make(map[VendorID]Vendor, SIZE_HINT_VENDORS),
-		Devices:    make(map[DeviceID]Device, SIZE_HINT_DEVICES),
-		Classes:    make(map[uint8]Class, SIZE_HINT_CLASSES),
-		Subsystems: make(map[SubsystemID]Subsystem, SIZE_HINT_SUBSYSTEMS),
+		Vendors:    make(map[VendorID]*Vendor, SIZE_HINT_VENDORS),
+		Devices:    make(map[DeviceID]*Device, SIZE_HINT_DEVICES),
+		Classes:    make(map[uint8]*Class, SIZE_HINT_CLASSES),
+		Subsystems: make(map[SubsystemID]*Subsystem, SIZE_HINT_SUBSYSTEMS),
 	}
 	cur := struct {
 		vendor      *VendorID
@@ -48,7 +48,7 @@ func NewDB(scanner *bufio.Scanner) *DB {
 			continue
 		} else if line[0] == UPPER_C {
 			id := uint8(conv.ParseByteNum(line[2:4]))
-			class := Class{
+			class := &Class{
 				ID:         id,
 				Label:      string(line[6:]),
 				Subclasses: make(map[uint8]Subclass, 16),
@@ -60,7 +60,7 @@ func NewDB(scanner *bufio.Scanner) *DB {
 			cur.subclass = nil
 		} else if line[0] >= 0x30 && line[0] <= 0x39 || line[0] >= 0x61 && line[0] <= 0x66 {
 			id := conv.ParseByteNum(line[0:4])
-			vendor := Vendor{
+			vendor := &Vendor{
 				ID:         VendorID(id),
 				Label:      string(line[6:]),
 				Devices:    make(map[DeviceID]*Device),
@@ -89,13 +89,13 @@ func NewDB(scanner *bufio.Scanner) *DB {
 					cur.subclass = &id
 				} else if cur.vendor != nil {
 					id := DeviceID(uint(*cur.vendor)<<16 | conv.ParseByteNum(line[1:5]))
-					device := Device{
+					device := &Device{
 						ID:         id,
 						Label:      string(line[7:]),
 						Subsystems: make(map[SubsystemID]*Subsystem),
 					}
 					db.Devices[id] = device
-					db.Vendors[*cur.vendor].Devices[id] = &device
+					db.Vendors[*cur.vendor].Devices[id] = device
 					cur.device = &id
 				} else {
 					panic("got no cursor for tabbed line")
@@ -111,16 +111,16 @@ func NewDB(scanner *bufio.Scanner) *DB {
 				} else if cur.device != nil {
 					svid := conv.ParseByteNum(line[2:6])
 					id := SubsystemID(svid<<16 | conv.ParseByteNum(line[7:11]))
-					subsystem := Subsystem{
+					subsystem := &Subsystem{
 						ID:    id,
 						Label: string(line[13:]),
 					}
 					db.Subsystems[id] = subsystem
-					db.Devices[*cur.device].Subsystems[id] = &subsystem
+					db.Devices[*cur.device].Subsystems[id] = subsystem
 					if vendor, ok := db.Vendors[VendorID(svid)]; ok {
-						vendor.Subsystems[id] = &subsystem
+						vendor.Subsystems[id] = subsystem
 					} else {
-						cur.subsysCache[svid] = append(cur.subsysCache[svid], &subsystem)
+						cur.subsysCache[svid] = append(cur.subsysCache[svid], subsystem)
 					}
 				} else {
 					panic("got no cursor for double tabbed line")
