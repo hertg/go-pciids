@@ -1,23 +1,20 @@
 package pciids
 
-type VendorID uint16
 type Vendor struct {
-	ID         VendorID
+	ID         uint16
 	Label      string
-	Devices    map[DeviceID]*Device
-	Subsystems map[SubsystemID]*Subsystem
+	Devices    map[uint32]*Device
+	Subsystems map[uint32]*Subsystem
 }
 
-type DeviceID uint32
 type Device struct {
-	ID         DeviceID
+	ID         uint32
 	Label      string
-	Subsystems map[SubsystemID]*Subsystem
+	Subsystems map[uint32]*Subsystem
 }
 
-type SubsystemID uint32
 type Subsystem struct {
-	ID    SubsystemID
+	ID    uint32
 	Label string
 }
 
@@ -39,8 +36,8 @@ type ProgrammingInterface struct {
 }
 
 type DB struct {
-	Vendors    map[VendorID]*Vendor
-	Devices    map[DeviceID]*Device
-	Subsystems map[SubsystemID]*Subsystem
+	Vendors    map[uint16]*Vendor
+	Devices    map[uint32]*Device
+	Subsystems map[uint32]*Subsystem
 	Classes    map[uint8]*Class
 }

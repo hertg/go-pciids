@@ -62,21 +62,21 @@ func TestEntryCounts(t *testing.T) {
 func TestVendorParsing(t *testing.T) {
 	acmeCorp, ok := db.Vendors[0x0001]
 	assert.True(t, ok)
-	assert.Equal(t, pciids.VendorID(0x0001), acmeCorp.ID)
+	assert.Equal(t, uint16(0x0001), acmeCorp.ID)
 	assert.Equal(t, "ACME Corporation", acmeCorp.Label)
 	assert.Equal(t, 2, len(acmeCorp.Devices))
 	assert.Equal(t, 2, len(acmeCorp.Subsystems))
 
 	fooLLC, ok := db.Vendors[0x71bf]
 	assert.True(t, ok)
-	assert.Equal(t, pciids.VendorID(0x71bf), fooLLC.ID)
+	assert.Equal(t, uint16(0x71bf), fooLLC.ID)
 	assert.Equal(t, "Foo Technology LLC", fooLLC.Label)
 	assert.Equal(t, 1, len(fooLLC.Devices))
 	assert.Equal(t, 1, len(fooLLC.Subsystems))
 
 	barLtd, ok := db.Vendors[0x4200]
 	assert.True(t, ok)
-	assert.Equal(t, pciids.VendorID(0x4200), barLtd.ID)
+	assert.Equal(t, uint16(0x4200), barLtd.ID)
 	assert.Equal(t, "Bar Electronics Ltd.", barLtd.Label)
 	assert.Equal(t, 1, len(barLtd.Devices))
 	assert.Equal(t, 2, len(barLtd.Subsystems))

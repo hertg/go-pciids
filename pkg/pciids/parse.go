@@ -25,24 +25,18 @@ const (
 // May return an error if an unexpected line is encountered while parsing.
 func NewDB(scanner *bufio.Scanner) (*DB, error) {
 	db := &DB{
-		Vendors:    make(map[VendorID]*Vendor, SIZE_HINT_VENDORS),
-		Devices:    make(map[DeviceID]*Device, SIZE_HINT_DEVICES),
+		Vendors:    make(map[uint16]*Vendor, SIZE_HINT_VENDORS),
+		Devices:    make(map[uint32]*Device, SIZE_HINT_DEVICES),
 		Classes:    make(map[uint8]*Class, SIZE_HINT_CLASSES),
-		Subsystems: make(map[SubsystemID]*Subsystem, SIZE_HINT_SUBSYSTEMS),
+		Subsystems: make(map[uint32]*Subsystem, SIZE_HINT_SUBSYSTEMS),
 	}
-	cur := struct {
-		vendor      *VendorID
-		device      *DeviceID
+	cursor := struct {
+		vendor      *uint16
+		device      *uint32
 		class       *uint8
 		subclass    *uint8
-		subsysCache map[uint][]*Subsystem
-	}{
-		vendor:      nil,
-		device:      nil,
-		class:       nil,
-		subclass:    nil,
-		subsysCache: make(map[uint][]*Subsystem),
-	}
+		subsysCache map[uint16][]*Subsystem
+	}{subsysCache: make(map[uint16][]*Subsystem)}
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -58,73 +52,73 @@ func NewDB(scanner *bufio.Scanner) (*DB, error) {
 				Subclasses: make(map[uint8]Subclass, 16),
 			}
 			db.Classes[id] = class
-			cur.vendor = nil
-			cur.device = nil
-			cur.class = &class.ID
-			cur.subclass = nil
+			cursor.vendor = nil
+			cursor.device = nil
+			cursor.class = &class.ID
+			cursor.subclass = nil
 		} else if line[0] >= 0x30 && line[0] <= 0x39 || line[0] >= 0x61 && line[0] <= 0x66 {
-			id := conv.ParseByteNum(line[0:4])
+			id := uint16(conv.ParseByteNum(line[0:4]))
 			vendor := &Vendor{
-				ID:         VendorID(id),
+				ID:         id,
 				Label:      string(line[6:]),
-				Devices:    make(map[DeviceID]*Device),
-				Subsystems: make(map[SubsystemID]*Subsystem),
+				Devices:    make(map[uint32]*Device),
+				Subsystems: make(map[uint32]*Subsystem),
 			}
-			if subsystems, ok := cur.subsysCache[id]; ok {
+			if subsystems, ok := cursor.subsysCache[id]; ok {
 				for _, subsystem := range subsystems {
 					vendor.Subsystems[subsystem.ID] = subsystem
 				}
 			}
-			db.Vendors[VendorID(id)] = vendor
-			cur.vendor = &vendor.ID
-			cur.device = nil
-			cur.class = nil
-			cur.subclass = nil
+			db.Vendors[id] = vendor
+			cursor.vendor = &vendor.ID
+			cursor.device = nil
+			cursor.class = nil
+			cursor.subclass = nil
 		} else if line[0] == TAB {
 			if line[1] != TAB {
-				if cur.class != nil {
+				if cursor.class != nil {
 					id := uint8(conv.ParseByteNum(line[1:3]))
 					subclass := Subclass{
 						ID:                    id,
 						Label:                 string(line[5:]),
 						ProgrammingInterfaces: make(map[uint8]ProgrammingInterface),
 					}
-					db.Classes[*cur.class].Subclasses[id] = subclass
-					cur.subclass = &id
-				} else if cur.vendor != nil {
-					id := DeviceID(uint(*cur.vendor)<<16 | conv.ParseByteNum(line[1:5]))
+					db.Classes[*cursor.class].Subclasses[id] = subclass
+					cursor.subclass = &id
+				} else if cursor.vendor != nil {
+					id := uint32(*cursor.vendor)<<16 | uint32(conv.ParseByteNum(line[1:5]))
 					device := &Device{
 						ID:         id,
 						Label:      string(line[7:]),
-						Subsystems: make(map[SubsystemID]*Subsystem),
+						Subsystems: make(map[uint32]*Subsystem),
 					}
 					db.Devices[id] = device
-					db.Vendors[*cur.vendor].Devices[id] = device
-					cur.device = &id
+					db.Vendors[*cursor.vendor].Devices[id] = device
+					cursor.device = &id
 				} else {
 					return nil, fmt.Errorf("parsing error: cursor is on a tabbed line, but without any cursor context info")
 				}
 			} else {
-				if cur.subclass != nil {
+				if cursor.subclass != nil {
 					id := uint8(conv.ParseByteNum(line[2:4]))
 					progif := ProgrammingInterface{
 						ID:    id,
 						Label: string(line[6:]),
 					}
-					db.Classes[*cur.class].Subclasses[*cur.subclass].ProgrammingInterfaces[id] = progif
-				} else if cur.device != nil {
-					svid := conv.ParseByteNum(line[2:6])
-					id := SubsystemID(svid<<16 | conv.ParseByteNum(line[7:11]))
+					db.Classes[*cursor.class].Subclasses[*cursor.subclass].ProgrammingInterfaces[id] = progif
+				} else if cursor.device != nil {
+					svid := uint16(conv.ParseByteNum(line[2:6]))
+					id := uint32(svid)<<16 | uint32(conv.ParseByteNum(line[7:11]))
 					subsystem := &Subsystem{
 						ID:    id,
 						Label: string(line[13:]),
 					}
 					db.Subsystems[id] = subsystem
-					db.Devices[*cur.device].Subsystems[id] = subsystem
-					if vendor, ok := db.Vendors[VendorID(svid)]; ok {
+					db.Devices[*cursor.device].Subsystems[id] = subsystem
+					if vendor, ok := db.Vendors[svid]; ok {
 						vendor.Subsystems[id] = subsystem
 					} else {
-						cur.subsysCache[svid] = append(cur.subsysCache[svid], subsystem)
+						cursor.subsysCache[svid] = append(cursor.subsysCache[svid], subsystem)
 					}
 				} else {
 					return nil, fmt.Errorf("parsing error: cursor is on a double tabbed line, but without any cursor context info")
