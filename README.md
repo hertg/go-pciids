@@ -1,6 +1,18 @@
-# go-pciids
 
-A minimal, zero-dependency library to parse [pci.ids](https://pci-ids.ucw.cz/) files.
+<div align="center">
+  <h1><strong>go-pciids</strong></h1>
+  <p>
+		<strong>A minimal, zero-dependency library to parse <a href="https://pci-ids.ucw.cz/">pci.ids</a> files.</strong>
+  </p>
+  <p>
+    <a href="https://goreportcard.com/report/github.com/hertg/go-pciids">
+      <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/hertg/go-pciids" />
+    </a>
+    <a href="#">
+			<img alt="License Information" src="https://img.shields.io/github/license/hertg/go-pciids">
+    </a>
+  </p>
+</div>
 
 ## Description
 
@@ -29,16 +41,45 @@ go get github.com/hertg/go-pciids
 ### Parse
 
 ```go
+// example for creating a scanner
 filepath := "/usr/share/hwdata/pci.ids"
 file, _ := os.Open(filepath)
 scanner := bufio.NewScanner(file)
 
-// you need to provide a *bufio.Scanner for the pci.ids yourself
+// actual usage
 db, err := pciids.NewDB(scanner)
 ```
 
 ### Query
-TODO
+
+Names and labels of vendors, devices, and classes can be easily
+retrieved by using the `Find***Label` methods available inside the
+`pciids` package.
+
+```go
+db.FindClassLabel(0x03) 							// -> 'Display controller'
+db.FindSubclassLabel(0x03, 0x00) 			// -> 'VGA compatible controller'
+db.FindVendorLabel(0x1002) 						// -> 'Advanced Micro Devices, Inc. [AMD/ATI]'
+db.FindDeviceLabel(0x1002, 0x73bf) 		// -> 'Navi 21 [Radeon RX 6800/6800 XT / 6900 XT]'
+db.FindSubsystemLabel(0x148c, 0x2408) // -> 'Red Devil AMD Radeon RX 6900 XT'
+```
+
+The `DB` can also be traversed manually, 
+see a quick overview of the DB structure.
+
+```text
+DB
+├─ vendors
+│  ├─ devices
+│  │  └─ subsystems
+│  └─ subsystems 
+├─ devices
+│  └─ subsystems 
+├─ subsystems
+└─ classes
+   └─ subclasses
+      └─ progifs
+```
 
 ## Comparison
 
@@ -47,7 +88,7 @@ unsigned integers. This prevents unnecessary string allocations
 and significantly improves performance.
 
 It has been found that this library parses at 2-3 times the speed
-while using roughly half the amount memory in comparison.
+while using roughly half the amount memory in comparison to [jaypipes/pcidb](https://github.com/jaypipes/pcidb).
 
 <details>
 	<summary>Open Benchmark</summary>

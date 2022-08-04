@@ -6,8 +6,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindFullClass(t *testing.T) {
+func TestFindClassLabel(t *testing.T) {
 	db := testDB()
-	label := db.FindSubclass(0x0300)
+	label := db.FindClassLabel(0x03)
+	assert.Equal(t, "Display controller", *label)
+}
+
+func TestFindSubclassLabel(t *testing.T) {
+	db := testDB()
+	label := db.FindSubclassLabel(0x03, 0x00)
 	assert.Equal(t, "VGA compatible controller", *label)
+
+	// providing an inexistent subclass,
+	// should return the label of the class instead
+	label = db.FindSubclassLabel(0x03, 0x99)
+	assert.Equal(t, "Display controller", *label)
 }
