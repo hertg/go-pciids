@@ -57,14 +57,14 @@ retrieved by using the `Find***Label` methods available inside the
 `pciids` package.
 
 ```go
-db.FindClassLabel(0x03) 							// -> 'Display controller'
-db.FindSubclassLabel(0x03, 0x00) 			// -> 'VGA compatible controller'
-db.FindVendorLabel(0x1002) 						// -> 'Advanced Micro Devices, Inc. [AMD/ATI]'
-db.FindDeviceLabel(0x1002, 0x73bf) 		// -> 'Navi 21 [Radeon RX 6800/6800 XT / 6900 XT]'
-db.FindSubsystemLabel(0x148c, 0x2408) // -> 'Red Devil AMD Radeon RX 6900 XT'
+db.FindClassLabel(0x03) // 'Display controller'
+db.FindSubclassLabel(0x03, 0x00) // 'VGA compatible controller'
+db.FindVendorLabel(0x1002) // 'Advanced Micro Devices, Inc. [AMD/ATI]'
+db.FindDeviceLabel(0x1002, 0x73bf) // 'Navi 21 [Radeon RX 6800/6800 XT / 6900 XT]'
+db.FindSubsystemLabel(0x148c, 0x2408) // 'Red Devil AMD Radeon RX 6900 XT'
 ```
 
-The `DB` can also be traversed manually, 
+The `DB` can also be traversed manually,
 see a quick overview of the DB structure.
 
 ```text
