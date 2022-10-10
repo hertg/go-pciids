@@ -41,19 +41,19 @@ go get github.com/hertg/go-pciids
 ### Parse
 
 ```go
-// example for creating a scanner
+// you have to create a bufio.scanner yourself
 filepath := "/usr/share/hwdata/pci.ids"
 file, _ := os.Open(filepath)
 scanner := bufio.NewScanner(file)
 
-// actual usage
+// pass the scanner to the NewDB method
 db, err := pciids.NewDB(scanner)
 ```
 
 ### Query
 
 Names and labels of vendors, devices, and classes can be easily
-retrieved by using the `Find***Label` methods available inside the
+retrieved by using the `Find...Label` methods available inside the
 `pciids` package.
 
 ```go
@@ -90,17 +90,13 @@ and significantly improves performance.
 It has been found that this library parses at 2-3 times the speed
 while using roughly half the amount memory in comparison to [jaypipes/pcidb](https://github.com/jaypipes/pcidb).
 
-<details>
-	<summary>Open Benchmark</summary>
-
-	```text
-	goos: linux
-	goarch: amd64
-	pkg: github.com/hertg/go-pciids/pkg/pciids
-	cpu: AMD Ryzen 9 5950X 16-Core Processor
-	BenchmarkGoPCIIDS-32    	     100	  16775134 ns/op	 6400548 B/op	  116541 allocs/op
-	BenchmarkPCIDB-32       	      37	  29394779 ns/op	11972032 B/op	  184512 allocs/op
-	PASS
-	ok  	github.com/hertg/go-pciids/pkg/pciids	2.813s
-	```
-</details>
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/hertg/go-pciids/pkg/pciids
+cpu: AMD Ryzen 9 5950X 16-Core Processor
+BenchmarkGoPCIIDS-32    	     100	  16775134 ns/op	 6400548 B/op	  116541 allocs/op
+BenchmarkPCIDB-32       	      37	  29394779 ns/op	11972032 B/op	  184512 allocs/op
+PASS
+ok  	github.com/hertg/go-pciids/pkg/pciids	2.813s
+```
